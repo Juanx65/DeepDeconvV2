@@ -1,0 +1,8 @@
+data/
+checkpoints/
+deepdeconv/
+
+#ignore pycache
+**/__pycache__
+
+utils/plots
