@@ -1,10 +1,10 @@
-####################################################################################################
-                          """IMPORTS SECTION"""
-####################################################################################################
+################################################################################
+""" IMPORTS SECTION """
 import os
 from pathlib import Path
 import numpy as np
 import scipy.fft
+import scipy.integrate as it
 from scipy.signal import windows
 import matplotlib.pyplot as plt
 import h5py
@@ -15,31 +15,57 @@ import tensorflow as tf
 import argparse
 os.environ['XLA_PYTHON_CLIENT_MEM_FRACTION']='.10'
 
+################################################################################
+# Global consts
+default_kernel = 'chirp_kernel.npy' # For simulated chirped data
 
-####################################################################################################
-                            """ TEST FUNCTION """
-####################################################################################################
+# -> Data constants
+buf = 100_000
+samp = 50. #sampling time
+
+# -> Model parameters [TO-DO]: This is from the paper
+rho = 10.0
+f0 = 8
+blocks = 3
+
+#####################################################################[Functions]
+# Integrate DAS data: Performs the integration of data in the frequency domain
+# data = data to integrate
+# samp = sampling time
+def integrateDAS(data):
+    _, Nt = data.shape
+    win = windows.tukey(Nt, alpha=0.1)
+    freqs = scipy.fft.rfftfreq(Nt, d=1/samp)
+    Y = scipy.fft.rfft(win * data, axis=1)
+    Y_int = -Y / (2j * np.pi * freqs)
+    Y_int[:, 0] = 0
+    data_int = scipy.fft.irfft(Y_int, axis=1)
+    data_int /= data_int.std()
+    return data_int
+################################################################################
+""" TEST FUNCTION """
+################################################################################
 def test(opt):
-    cwd = os.getcwd()                                 #NO SE
+    cwd = os.getcwd()
     datadir = os.path.join(cwd, opt.data_dir)
-    kerneldir =  os.path.join(cwd, opt.kernel_dir)
     data_file = os.path.join(datadir, "DAS_data.h5")
-    buf = 100_000
-    samp = 50.
-
-
-    """ CARGAR EL MODELO """
-    """ Load impulse response """
-    kernel = np.load(os.path.join(kerneldir,"i_kernel.npy"))
-    # Se normaliza el kernel respecto al máximo (a diferencia de las traces DAS que se normalizan respecto a la desviación estandar)
-    kernel = kernel / kernel.max()
-
-    """ Some model parameters """
-    rho = 10.0
-    f0 = 8
-    blocks = 3
     noise = opt.dropout
     deep_win = opt.deep_win
+
+
+    """ LOAD KERNEL """
+    # Verify if file exists
+    if not(os.path.exists(opt.kernel)):
+        print("The kernel file <{}> does not exists!".format(opt.kernel))
+        exit(1)
+    kernel = np.load(opt.kernel)
+    if(opt.integrate_data):
+        kernel = it.cumtrapz(kernel, np.linspace(0,1,len(kernel)), initial=0.0)
+    if(opt.perform_crosscorrelation):
+        kernel = np.flip(kernel)
+
+    kernel = kernel / kernel.max() # Kernel normalization
+
 
     """ CARGAR DATA PARA PRUEBAS """
 
@@ -66,23 +92,16 @@ def test(opt):
     """ CARGAR PESOS AL MODELO """
     model.load_weights(str(str(Path(__file__).parent) + opt.weights)).expect_partial()#'/checkpoints/cp-0100.ckpt'))
 
-    """ Integrate DAS data (strain rate -> strain) """
+    # The original work integrates the data, so is left as an option, but not in use anymore.
+    if (opt.integrate_data):
+        data = integrateDAS(data)
 
-    win = windows.tukey(Nt, alpha=0.1)
-    freqs = scipy.fft.rfftfreq(Nt, d=1/samp)
-    Y = scipy.fft.rfft(win * data, axis=1)
-    Y_int = -Y / (2j * np.pi * freqs)
-    Y_int[:, 0] = 0
-    data_int = scipy.fft.irfft(Y_int, axis=1)
-    data_int /= data_int.std()
 
-    ########################################################
-
-    Nwin = data_int.shape[1] // deep_win
+    Nwin = data.shape[1] // deep_win
     # Total number of time samples to be processed
     Nt_deep = Nwin * deep_win #
     #
-    data_split = np.stack(np.split(data_int[:, :Nt_deep], Nwin, axis=-1), axis=0)
+    data_split = np.stack(np.split(data[:, :Nt_deep], Nwin, axis=-1), axis=0)
     data_split = np.stack(data_split, axis=0)
     data_split = np.expand_dims(data_split, axis=-1)
     # Buffer for impulses
@@ -158,16 +177,17 @@ def test(opt):
             break
         i = input("index data show: ")
 
-def parse_opt(known=False):
+def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', default = "data",type=str,help='dir to the dataset')
-    parser.add_argument('--kernel_dir', default = "kernels",type=str,help='dir to the dataset')
     parser.add_argument('--weights',default = '/checkpoints/best.ckpt', type=str,help='load weights path')
     parser.add_argument('--optimizer', default = 'adam',type=str,help='optimizer for the model ej: adam, sgd, adamax ...')
     parser.add_argument('--dropout', default = 1.0,type=float,help='% dropout to use')
     parser.add_argument('--deep_win', default = 1024,type=int,help='Number of samples per chunk')
-
-    opt = parser.parse_known_args()[0] if known else parser.parse_args()
+    parser.add_argument('--integrate_data', action = 'store_true', help='Indicates if the DAS data and kernel should be integrated.')
+    parser.add_argument('--kernel', default = default_kernel, help='Indicates which kernel to use. Recieves a <npy> file.')
+    parser.add_argument('--perform_crosscorrelation', action='store_false', help='Flips kernel in the horizontal axis to perform the cross-correlation. By default perfoms the convolution')
+    opt = parser.parse_args()
     return opt
 
 def main(opt):
