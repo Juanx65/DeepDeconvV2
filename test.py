@@ -22,10 +22,8 @@ authors_data = 'data/DAS_data.h5'
 """ TEST FUNCTION """
 ################################################################################
 def test(opt):
-    cwd = os.getcwd()
     noise = opt.dropout
     deep_win = opt.deep_win
-
 
     """ LOAD KERNEL """
     # Verify if file exists
@@ -48,12 +46,11 @@ def test(opt):
         opt.data = authors_data
         print("--authors arg passed. Data {} will be ignored!".format(opt.data))
 
-    # DAS_data.h5 -> datos para leer (1.5GB) strain rate -> hay que integrarlos
     if not(os.path.exists(opt.data)):
         print("Data file {} does not exists!".format(opt.data))
         exit(1)
     with h5py.File(opt.data, "r") as f:
-        # Nch : numero de canales, Nt = largo de muestras (1024?), SI
+        # Nch : numero de canales (24), Nt = largo de muestras
         if(opt.authors):
             Nch, Nt = f["strainrate"].shape
             split = int(0.45 * Nt) #incluye todo menos train data
@@ -64,10 +61,11 @@ def test(opt):
 
     # se normaliza cada trace respecto a su desviación estandar
     data /= data.std()
-    # if(opt.authors):
-    #     Nch, Nt = data.shape
-    # else:
-    #     _,Nch, Nt = data.shape
+
+    """ Integrate DAS data """
+    # The original work integrates the data, so it's left as an option, but not in use anymore.
+    if (opt.integrate):
+        data = integrateDAS(data)
 
     """ Init Deep Learning model """
     model = UNet(
@@ -80,11 +78,6 @@ def test(opt):
 
     """ CARGAR PESOS AL MODELO """
     model.load_weights(str(str(Path(__file__).parent) + opt.weights)).expect_partial()#'/checkpoints/cp-0100.ckpt'))
-
-    # The original work integrates the data, so is left as an option, but not in use anymore.
-    if (opt.integrate):
-        data = integrateDAS(data)
-
 
     Nwin = data.shape[1] // deep_win
     # Total number of time samples to be processed
