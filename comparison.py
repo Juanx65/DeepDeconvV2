@@ -21,6 +21,7 @@ os.environ['XLA_PYTHON_CLIENT_MEM_FRACTION']='.10'
 # Global consts
 default_kernel = 'kernels/autores_kernel_inv.npy' # Kernel de los autores
 default_data = 'data/DAS_data.h5'
+authors_data = 'data/DAS_data.h5'
 
 def comparison(opt):
     #########################################################################
