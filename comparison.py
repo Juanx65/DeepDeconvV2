@@ -105,7 +105,7 @@ def comparison(opt):
     f.suptitle('DATA'+ str(i), fontsize=16)
     #subplot1: origina
     for i, wv in enumerate(y):
-        ax1.plot( t, wv - 8 * i, "tab:orange",linewidth=2.5)
+        ax1.plot( t[0], wv[0] - 8 * i, "tab:orange",linewidth=2.5)
         break
     plt.tight_layout()
     plt.grid()
