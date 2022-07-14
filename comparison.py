@@ -1,16 +1,26 @@
+################################################################################
+""" IMPORTS SECTION """
 import os
+from pathlib import Path
 import numpy as np
-import scipy.fft
-from scipy.signal import windows
 import matplotlib.pyplot as plt
 import h5py
+from models import UNet
+from models import CallBacks
+from random import choice
+import scipy.fft
+from scipy.signal import windows
 from ISTA import FISTA
-from utils import FFT_roll, peak_projection
-from time import time #time comparisonpip install jax
+from time import time #time comparison
+import argparse
+from utils import *
+
+os.environ['XLA_PYTHON_CLIENT_MEM_FRACTION']='.10'
 
 ################################################################################
 # Global consts
 default_kernel = 'kernels/autores_kernel_inv.npy' # Kernel de los autores
+default_data = 'data/DAS_data.h5'
 
 def comparison(opt):
     #########################################################################
@@ -122,7 +132,7 @@ def comparison(opt):
 def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument('--noncausal_convolution', action='store_false', help='Determines whether causal or noncausal convolution is used.')
-    parser.add_argument('--data', default=default_data, required=True ,type=str,help='Dataset to load.')
+    parser.add_argument('--data', default=default_data,type=str,help='Dataset to load.')
     parser.add_argument('--act_function', default = "tanh", type=str, help='Activation function for the last layer of UNet e.g. tanh, relu')
     parser.add_argument('--weights',default = '/checkpoints/best.ckpt', type=str,help='Load weights path.')
     parser.add_argument('--optimizer', default = 'adam',type=str,help='Optimizer for the model e.g. adam, sgd, adamax ...')
