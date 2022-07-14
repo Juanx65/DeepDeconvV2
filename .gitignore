@@ -2,6 +2,7 @@ data/*
 !data/CHIRP_DAS_data.h5py
 checkpoints/
 deepdeconv/
+env/
 
 #ignore pycache
 **/__pycache__
