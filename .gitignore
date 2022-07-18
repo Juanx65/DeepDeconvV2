@@ -3,6 +3,7 @@ data/*
 checkpoints/
 deepdeconv/
 env/
+*.csv
 
 #ignore pycache
 **/__pycache__

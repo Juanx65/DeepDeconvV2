@@ -19,7 +19,8 @@ os.environ['XLA_PYTHON_CLIENT_MEM_FRACTION']='.10'
 
 ################################################################################
 # Global consts
-default_kernel = 'kernels/autores_kernel_inv.npy' # Kernel de los autores
+#default_kernel = 'kernels/autores_kernel_inv.npy' # Kernel de los autores
+default_kernel = 'kernels/kernel.npy' # Kernel de los autores
 default_data = 'data/DAS_data.h5'
 authors_data = 'data/DAS_data.h5'
 
@@ -80,7 +81,7 @@ def comparison(opt):
     t0 = time()
 
     # Loop over time chunks
-    for i in range(386,387):#Nwin):
+    for i in range(Nwin):
         # Select chunk
         t_slice = slice(i * ISTA_win, (i + 1) * ISTA_win)
         y = data[:, t_slice]
@@ -89,15 +90,15 @@ def comparison(opt):
         print(i, loss)
         # Store impulse model
         impulses_ISTA[:, t_slice] = x
-
     t1 = time()
 
     print("Done in ", t1-t0, "seconds")
 
     """ GRAFICAR LOS RESULTADOS """
     samp = 80.
-    t = np.arange(x.shape[1]) / samp
-
+    t = np.arange(y.shape[1]) / samp
+    
+    
     f, (ax1, ax2,ax3) = plt.subplots(1, 3, sharey=True)
     ax1.set_title('S')
     ax2.set_title('E_hat')
@@ -106,22 +107,21 @@ def comparison(opt):
     f.suptitle('DATA'+ str(i), fontsize=16)
     #subplot1: origina
     for i, wv in enumerate(y):
-        ax1.plot( t[0], wv[0] - 8 * i, "tab:orange",linewidth=2.5)
-        break
+        ax1.plot( t, wv - 8 * i, "tab:orange",linewidth=2.5)
     plt.tight_layout()
     plt.grid()
 
     #subplot2: x_hat-> estimación de la entrada (conv kernel con la salida)
     for i, wv in enumerate(x):
-        ax2.plot(t,(10*wv - 8 * i), "tab:red", linewidth=2.5)
-        break
+        ax2.plot(t,(wv - 8 * i), "tab:red", linewidth=2.5)
+        
     plt.tight_layout()
     plt.grid()
 
     #subplot3: y_hat->
     for i, wv in enumerate(x): #deberia ser y_hat
         ax3.plot(t,wv - 8 * i, c="k",linewidth=2.5)
-        break
+
     plt.tight_layout()
     plt.grid()
 
@@ -140,7 +140,7 @@ def parse_opt():
     parser.add_argument('--dropout', default = 1.0,type=float,help='Percentage dropout to use.')
     parser.add_argument('--deep_win', default = 1024,type=int,help='Number of samples per chunk.')
     parser.add_argument('--integrate', action = 'store_true', help='Indicates if the DAS data and kernel should be integrated.')
-    parser.add_argument('--kernel', default = default_kernel, help='Indicates which kernel to use. Recieves a <npy> file.')
+    parser.add_argument('--kernel', default = default_kernel, help='Indicates which kernel to use. Receives a <npy> file.')
     parser.add_argument('-pcc','--perform_crosscorrelation', action='store_false', help='Flips kernel in the horizontal axis to perform the cross-correlation. By default perfoms the convolution')
     parser.add_argument('--authors', action='store_true', help='Data from the original work is used, which has a weird shape.')
 

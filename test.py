@@ -175,7 +175,7 @@ def parse_opt():
     parser.add_argument('--dropout', default = 1.0,type=float,help='Percentage dropout to use.')
     parser.add_argument('--deep_win', default = 1024,type=int,help='Number of samples per chunk.')
     parser.add_argument('--integrate', action = 'store_true', help='Indicates if the DAS data and kernel should be integrated.')
-    parser.add_argument('--kernel', default = default_kernel, help='Indicates which kernel to use. Recieves a <npy> file.')
+    parser.add_argument('--kernel', default = default_kernel, help='Indicates which kernel to use. Receives a <npy> file.')
     parser.add_argument('-pcc','--perform_crosscorrelation', action='store_false', help='Flips kernel in the horizontal axis to perform the cross-correlation. By default perfoms the convolution')
     parser.add_argument('--authors', action='store_true', help='Data from the original work is used, which has a weird shape.')
 
