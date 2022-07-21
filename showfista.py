@@ -1,9 +1,22 @@
 import numpy as np
 from matplotlib import pyplot as plt
+import h5py
+import os
+
+""" Load DAS data """
+cwd = os.getcwd()
+datadir = os.path.join(cwd, "data")
+data_file = os.path.join(datadir, "DAS_data.h5")
+buf = 100_000
+with h5py.File(data_file, "r") as f:
+    Nch, Nt = f["strainrate"].shape
+    split = int(0.9 * Nt)
+    data = f["strainrate"][:, split:-buf].astype(np.float32)
+    
+data /= data.std()
+#Nch, Nt = data.shape
 
 
-
-# Load data
 impulses_ISTA = np.loadtxt('impulse_ISTA.csv', delimiter=',')
 
 letter_params = {
@@ -13,12 +26,11 @@ letter_params = {
     "bbox": {"edgecolor": "k", "linewidth": 1, "facecolor": "w",}
 }
 
-samp = 50.0
-
 
 """Deconvolution results"""
 """ Some interesting examples to plot  """
 
+window = 1024
 examples = {
     "light1": {
         "slice": slice(30_000, 40_000),
@@ -37,11 +49,17 @@ examples = {
     },
     "heavy3": {
         "slice": slice(511_850, 513_400),
+    },
+    "light1024": {
+        "slice": slice(219_900, 219_900 + window - 1)
+    },
+    "heavy1024": {
+        "slice": slice(388_600, 388_600 + window - 1)
     }
 }
 
 """plots"""
-scale = 0.02  # spacing between wiggles
+scale = 1.5 # spacing between wiggles
 samp = 50.
 # Draw canvas
 plt.close("all")
@@ -54,7 +72,7 @@ for ax in axes.ravel():
         ax.spines[spine].set_visible(False)
 
 # Loop over examples
-for j, example in enumerate((examples["light1"], examples["light1"])):
+for j, example in enumerate((examples["light1024"], examples["heavy3"])):
     
     # Time vector
     t = np.arange(example["slice"].stop - example["slice"].start) / samp
@@ -65,8 +83,8 @@ for j, example in enumerate((examples["light1"], examples["light1"])):
     
     # Plot examples
     ax = axes[0, j]
-    for i, wv in enumerate(impulses_ISTA[:, example["slice"]]):
-        ax.plot(t, wv - 2 * i, c="k")
+    for i, wv in enumerate(data[:, example["slice"]]):
+        ax.plot(t, wv - i, c="k")
     ax = axes[1, j]
     for i, wv in enumerate(impulses_ISTA[:, example["slice"]]):
         ax.plot(t, wv - scale * i, c="k")

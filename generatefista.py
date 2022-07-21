@@ -1,21 +1,12 @@
 import os
-
 import numpy as np
 import scipy.fft
 from scipy.signal import windows
-
 import matplotlib.pyplot as plt
-
 import h5py
-
 from ISTA import FISTA
-
 from time import time
-
 from matplotlib import pyplot as plt
-
-
-
 from numpy import asarray
 from numpy import savetxt
 from numpy import loadtxt
@@ -95,7 +86,8 @@ ISTA_solver = FISTA(kernel=kernel, lam=0.02)
 
 t0 = time()
 
-# Loop over time chunks
+# Loop over time chunksDone 3790.2608981132507clea
+
 for i in range(Nwin):
     
     # Select chunk
