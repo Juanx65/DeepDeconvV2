@@ -59,7 +59,7 @@ examples = {
 }
 
 """plots"""
-scale = 1.5 # spacing between wiggles
+scale = 1 # spacing between wiggles
 samp = 50.
 # Draw canvas
 plt.close("all")
@@ -72,7 +72,7 @@ for ax in axes.ravel():
         ax.spines[spine].set_visible(False)
 
 # Loop over examples
-for j, example in enumerate((examples["light1024"], examples["heavy3"])):
+for j, example in enumerate((examples["light1024"], examples["heavy1024"])):
     
     # Time vector
     t = np.arange(example["slice"].stop - example["slice"].start) / samp
@@ -84,7 +84,7 @@ for j, example in enumerate((examples["light1024"], examples["heavy3"])):
     # Plot examples
     ax = axes[0, j]
     for i, wv in enumerate(data[:, example["slice"]]):
-        ax.plot(t, wv - i, c="k")
+        ax.plot(t, wv - scale *i, c="k")
     ax = axes[1, j]
     for i, wv in enumerate(impulses_ISTA[:, example["slice"]]):
         ax.plot(t, wv - scale * i, c="k")
