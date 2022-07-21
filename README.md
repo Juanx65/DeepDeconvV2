@@ -47,11 +47,7 @@ Set-ExecutionPolicy Unrestricted -Scope Process
 
 
 
-# extras
-If u get error on tensorflow not working with your gpu:
-(this is the download link: https://www.dll-files.com/cudnn64_8.dll.html). When you get the file, you can just put in your bin directory. For example, usually in windows platform, you can put it into C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.3\bin.
-
-# Fast Demo: tummy AND dummy
+# Fast Demo:
 
 DAS chirp sin cambio de fase entre canales
 ```
