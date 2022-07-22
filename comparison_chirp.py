@@ -151,8 +151,8 @@ def test(opt):
 
             """ Embrace programacion de simio porque no manejo python """
             # Set x-axis limits
-            for ax in axes[:, :]:
-                ax.set_xlim((t.min(), t.max()))
+            #for ax in axes[:, :]:
+            #    ax.set_xlim((t.min(), t.max()))
 
             # Plot examples
             ax = axes[0, 0]
@@ -205,7 +205,7 @@ def test(opt):
 def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument('--noncausal_convolution', action='store_false', help='Determines whether causal or noncausal convolution is used.')
-    parser.add_argument('--data', default=default_data, required=True ,type=str,help='Dataset to load.')
+    parser.add_argument('--data', default=default_data ,type=str,help='Dataset to load.')
     parser.add_argument('--act_function', default = "tanh", type=str, help='Activation function for the last layer of UNet e.g. tanh, relu')
     parser.add_argument('--weights',default = '/checkpoints/best.ckpt', type=str,help='Load weights path.')
     parser.add_argument('--optimizer', default = 'adam',type=str,help='Optimizer for the model e.g. adam, sgd, adamax ...')
