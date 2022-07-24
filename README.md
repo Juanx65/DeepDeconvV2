@@ -51,13 +51,25 @@ Set-ExecutionPolicy Unrestricted -Scope Process
 
 DAS chirp sin cambio de fase entre canales
 ```
-python test.py --data data/CHIRP_DAS_FASE_data.h5 --weights /weights/best.ckpt
+python test.py --data data/CHIRP_DAS_NOFASE_data.h5 --weights /weights/200-epoch-chirp-single-channel/best.ckpt --kernel kernels/chirp_kernel.npy --act_function tanh
 ```
 DAS chirp con aceleración entre canales
 ```
-python test.py --data data/CHIRP_DAS_NOFASE_data.h5 --weights /weights/best.ckpt
+python test.py --data data/CHIRP_DAS_FASE_data.h5 --weights /weights/200-epoch-chirp-multi-channel/best.ckpt --kernel kernels/chirp_kernel.npy --act_function tanh
 ```
 DAS de los autores
 ```
-python test.py --data data/DAS_data.h5 --weights /weights/best.ckpt --authors
+python test.py --weights /weights/1000-epoch-authors-integrado/best.ckpt --authors --kernel kernels/kernel.npy -ncc -pcc --act_function relu --integrate
 ```
+
+DAS kernel flip sin integrar
+```
+python test.py --weights /weights/200-epoch-kernel-flip-sin-integrar/best.ckpt --authors --kernel kernels/kernel.npy -ncc --act_function relu
+```
+
+DAS kernel no flip sin integrar
+```
+python test.py --weights /weights/200-epoch-kernel-no-flip-sin-integrar/best.ckpt --authors --kernel kernels/kernel.npy -ncc -pcc --act_function relu
+```
+
+

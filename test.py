@@ -32,8 +32,8 @@ def test(opt):
         exit(1)
     kernel = np.load(opt.kernel)
     if(opt.integrate):
-        kernel = it.cumtrapz(kernel, np.linspace(0,1,len(kernel)), initial=0.0)
-    if(opt.perform_crosscorrelation):
+        kernel = -1*it.cumtrapz(kernel, np.linspace(0,1,len(kernel)), initial=0.0) # -1 completamente necesario
+    if not (opt.perform_crosscorrelation):
         kernel = np.flip(kernel)
 
     kernel = kernel / kernel.max() # Kernel normalization
@@ -167,16 +167,16 @@ def test(opt):
 
 def parse_opt():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--noncausal_convolution', action='store_false', help='Determines whether causal or noncausal convolution is used.')
+    parser.add_argument('-ncc','--noncausal_convolution', action='store_false', help='Determines whether causal or noncausal convolution is used.')
     parser.add_argument('--data', default=default_data,type=str,help='Dataset to load.')
     parser.add_argument('--act_function', default = "tanh", type=str, help='Activation function for the last layer of UNet e.g. tanh, relu')
     parser.add_argument('--weights',default = '/checkpoints/best.ckpt', type=str,help='Load weights path.')
     parser.add_argument('--optimizer', default = 'adam',type=str,help='Optimizer for the model e.g. adam, sgd, adamax ...')
     parser.add_argument('--dropout', default = 1.0,type=float,help='Percentage dropout to use.')
-    parser.add_argument('--deep_win', default = 1024,type=int,help='Number of samples per chunk.')
+    parser.add_argument('--deep_win', default = 1024,type   =int,help='Number of samples per chunk.')
     parser.add_argument('--integrate', action = 'store_true', help='Indicates if the DAS data and kernel should be integrated.')
     parser.add_argument('--kernel', default = default_kernel, help='Indicates which kernel to use. Receives a <npy> file.')
-    parser.add_argument('-pcc','--perform_crosscorrelation', action='store_false', help='Flips kernel in the horizontal axis to perform the cross-correlation. By default perfoms the convolution')
+    parser.add_argument('-pcc','--perform_crosscorrelation', action='store_true', help='Flips kernel in the horizontal axis to perform the cross-correlation. By default perfoms the convolution')
     parser.add_argument('--authors', action='store_true', help='Data from the original work is used, which has a weird shape.')
 
     opt = parser.parse_args()
