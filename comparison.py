@@ -104,6 +104,7 @@ data_split = np.expand_dims(data_split, axis=-1)
 
 # Buffer for impulses
 x = np.zeros_like(data_split)
+y = np.zeros_like(data_split)
 
 batch_size = 32
 N = data_split.shape[0] // batch_size
@@ -115,16 +116,19 @@ t0 = time()
 for i in range(data_split.shape[0] // batch_size):
     print(i)
     n_slice = slice(i * batch_size, (i + 1) * batch_size)
-    x_i, _ = model(data_split[n_slice])
+    x_i, y_i = model(data_split[n_slice])
     x[n_slice] = x_i
+    y[n_slice] = y_i
     
 # If there is some residual chunk: process that too
 if r > 0:
     n_slice = slice((i + 1) * batch_size, None)
-    x_i, _ = model(data_split[n_slice])
+    x_i, y_i = model(data_split[n_slice])
     x[n_slice] = x_i
+    y[n_slice] = y_i
 
 impulses_deep = np.concatenate(np.squeeze(x), axis=1)
+y_hat_authors_total = np.concatenate(np.squeeze(y), axis=1)
 
 t1 = time()
 
@@ -142,7 +146,7 @@ our_model.construct()
 our_model.compile()
 
 """ CARGAR PESOS AL MODELO """
-our_model.load_weights(str(str(Path(__file__).parent) + '/weights/1000-epoch-juan/best.ckpt')).expect_partial()#'/checkpoints/cp-0100.ckpt'))
+our_model.load_weights(str(str(Path(__file__).parent) + '/weights/1000-epoch-authors-integado/best.ckpt')).expect_partial()#'/checkpoints/cp-0100.ckpt'))
 
 """ Mould data into right shape for UNet """
 data_split = np.stack(np.split(data_int[:, :Nt_deep], Nwin, axis=-1), axis=0)
@@ -151,6 +155,7 @@ data_split = np.expand_dims(data_split, axis=-1)
 
 # Buffer for impulses
 x = np.zeros_like(data_split)
+y = np.zeros_like(data_split)
 
 batch_size = 32
 N = data_split.shape[0] // batch_size
@@ -162,16 +167,19 @@ t0 = time()
 for i in range(data_split.shape[0] // batch_size):
     print(i)
     n_slice = slice(i * batch_size, (i + 1) * batch_size)
-    x_i, _ = our_model(data_split[n_slice])
+    x_i, y_i = our_model(data_split[n_slice])
     x[n_slice] = x_i
+    y[n_slice] = y_i
     
 # If there is some residual chunk: process that too
 if r > 0:
     n_slice = slice((i + 1) * batch_size, None)
-    x_i, _ = our_model(data_split[n_slice])
+    x_i, y_i = our_model(data_split[n_slice])
     x[n_slice] = x_i
+    y[n_slice] = y_i
 
 impulses_deep_ours = np.concatenate(np.squeeze(x), axis=1)
+y_hat_ours_total = np.concatenate(np.squeeze(y), axis=1)
 
 t1 = time()
 
@@ -211,16 +219,18 @@ examples = {
         "slice": slice(219_900, 219_900 + window - 1)
     },
     "heavy1024": {
-        "slice": slice(388_600, 388_600 + window - 1)
+        "slice": slice(400_000, 500_000)
     }
 }
 
 """plots"""
-scale = 0.02 # spacing between wiggles
+scale = 0.02  # spacing between wiggles
+scale_height = [0.3, 1]
+scale_height2 = [0.14, 1]
 samp = 50.
 # Draw canvas
 plt.close("all")
-fig, axes = plt.subplots(ncols=2, nrows=4, figsize=(12, 6), constrained_layout=True, sharex="col", sharey="row")
+fig, axes = plt.subplots(ncols=2, nrows=6, figsize=(18, 6), constrained_layout=True, sharex="col", sharey="row")
 
 # Remove spines from all panels
 for ax in axes.ravel():
@@ -229,7 +239,7 @@ for ax in axes.ravel():
         ax.spines[spine].set_visible(False)
 
 # Loop over examples
-for j, example in enumerate((examples["light1"], examples["heavy1"])):
+for j, example in enumerate((examples["heavy3"], examples["heavy2"])):
     
     # Time vector
     t = np.arange(example["slice"].stop - example["slice"].start) / samp
@@ -244,13 +254,21 @@ for j, example in enumerate((examples["light1"], examples["heavy1"])):
         ax.plot(t, wv - 2 * i, c="k")
     ax = axes[1, j]
     for i, wv in enumerate(impulses_ISTA[:, example["slice"]]):
-        ax.plot(t, wv - scale * i, c="k")
+        ax.plot(t, scale_height[j]*wv - scale * i, c="k")
     ax = axes[2, j]
     for i, wv in enumerate(impulses_deep[:, example["slice"]]):
-        ax.plot(t, wv - scale * i, c="k")
+        ax.plot(t, scale_height[j]*wv - scale * i, c="k")
     ax = axes[3, j]
+    for i, wv in enumerate(y_hat_authors_total[:, example["slice"]]):
+        ax.plot(t, wv - 2 * i, c="k")
+    ax = axes[4, j]
     for i, wv in enumerate(impulses_deep_ours[:, example["slice"]]):
-        ax.plot(t, wv - scale * i, c="k")
+        ax.plot(t, scale_height2[j]*wv - scale * i, c="k")
+    ax = axes[5, j]
+    for i, wv in enumerate(y_hat_ours_total[:, example["slice"]]):
+        ax.plot(t, wv - 2 * i, c="k")
+
+        
         
 # Set x-label
 for ax in axes[-1]:
@@ -259,8 +277,11 @@ for ax in axes[-1]:
 # Set y-labels
 axes[0, 0].set_ylabel("Original", fontsize=14, labelpad=12)
 axes[1, 0].set_ylabel("FISTA", fontsize=14, labelpad=12)
-axes[2, 0].set_ylabel("DAE (authors)", fontsize=14, labelpad=12)
-axes[3, 0].set_ylabel("DAE (ours)", fontsize=14, labelpad=12)
+axes[2, 0].set_ylabel("Impulses\nDAE\n(authors)", fontsize=14, labelpad=12)
+axes[3, 0].set_ylabel("Reconstruction\nDAE\n(authors)", fontsize=14, labelpad=12)
+axes[4, 0].set_ylabel("Impulses\nDAE\n(ours)", fontsize=14, labelpad=12)
+axes[5, 0].set_ylabel("Reconstruction\nDAE\n(ours)", fontsize=14, labelpad=12)
+
 
 # Add panel letters
 for ax, letter in zip(axes.ravel(), "abcdefghijk"):
