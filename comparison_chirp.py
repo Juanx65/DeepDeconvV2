@@ -34,7 +34,7 @@ def test(opt):
     kernel = np.load(opt.kernel)
     if(opt.integrate):
         kernel = it.cumtrapz(kernel, np.linspace(0,1,len(kernel)), initial=0.0)
-    if(opt.perform_crosscorrelation):
+    if not (opt.perform_crosscorrelation):
         kernel = np.flip(kernel)
 
     kernel = kernel / kernel.max() # Kernel normalization
@@ -117,6 +117,9 @@ def test(opt):
     "bbox": {"edgecolor": "k", "linewidth": 1, "facecolor": "w",}
     }  
 
+    # Init solver
+    ISTA_solver = FISTA(kernel=kernel, lam=0.02)
+
     i = input("index 1 data show: ")
     j = input("index 2 data show: ") # segundo caso para mostrar
     while True:
@@ -126,9 +129,18 @@ def test(opt):
             if(opt.authors):
                 x_hat, y_hat = model.call(x[image_index[0]][None,:,:,:])
                 x_hat1, y_hat1 = model.call(x[image_index[1]][None,:,:,:])
+                x_hat0_fista = x[image_index[0]] # temporary
+                x_hat1_fista = x[image_index[1]]
             else:
                 x_hat, y_hat = model.call(x[image_index[0]][None,:,:])
                 x_hat1, y_hat1 = model.call(x[image_index[1]][None,:,:])
+                """ FISTA """
+                # Run FISTA with 50 iterations
+                loss, x_hat_fista, _ = ISTA_solver.solve(x[image_index[0]], N=7)
+                loss1, x_hat1_fista, _ = ISTA_solver.solve(x[image_index[1]], N=7)
+                print("loss FISTA 1: ", loss)
+                print("loss FISTA 2: ", loss1)
+
             x_hat = tf.reshape(x_hat,[24,1024])
             y_hat = tf.reshape(y_hat,[24,1024])
             x_hat1 = tf.reshape(x_hat1,[24,1024])
@@ -149,18 +161,21 @@ def test(opt):
 
             t = np.arange(x_hat.shape[1]) / samp
 
-            """ Embrace programacion de simio porque no manejo python """
+            """ Embrace programacion de simio """
             # Set x-axis limits
             #for ax in axes[:, :]:
             #    ax.set_xlim((t.min(), t.max()))
+            print("max x_hat", max(x_hat[0,:]))
+            print("max x_hat_fista", max(x_hat_fista[0,:]))
 
             # Plot examples
             ax = axes[0, 0]
             for i, wv in enumerate(x[image_index[0]]):
                 ax.plot(t, wv - scale * i, c="k")
             ax = axes[1, 0]
-            for i, wv in enumerate(x[image_index[0]]):
-                ax.plot(t, wv - scale * i, c="k")
+            for i, wv in enumerate(x_hat_fista):
+                ax.plot(t, 0.0001*wv - 100000*scale *i, c="k")
+                #break
             ax = axes[2, 0]
             for i, wv in enumerate(x_hat):
                 ax.plot(t, wv - scale * i, c="k")
@@ -171,8 +186,9 @@ def test(opt):
             for i, wv in enumerate(x[image_index[1]]):
                 ax.plot(t, wv - scale * i, c="k")
             ax = axes[1, 1]
-            for i, wv in enumerate(x[image_index[1]]):
-                ax.plot(t, wv - scale * i, c="k")
+            for i, wv in enumerate(x_hat1_fista):
+                ax.plot(t, 0.0001*wv - 100000*scale *i, c="k")
+                #break
             ax = axes[2, 1]
             for i, wv in enumerate(x_hat1):
                 ax.plot(t, wv - scale * i, c="k")
@@ -213,7 +229,7 @@ def parse_opt():
     parser.add_argument('--deep_win', default = 1024,type=int,help='Number of samples per chunk.')
     parser.add_argument('--integrate', action = 'store_true', help='Indicates if the DAS data and kernel should be integrated.')
     parser.add_argument('--kernel', default = default_kernel, help='Indicates which kernel to use. Receives a <npy> file.')
-    parser.add_argument('-pcc','--perform_crosscorrelation', action='store_false', help='Flips kernel in the horizontal axis to perform the cross-correlation. By default perfoms the convolution')
+    parser.add_argument('-pcc','--perform_crosscorrelation', action='store_true', help='Flips kernel in the horizontal axis to perform the cross-correlation. By default perfoms the convolution')
     parser.add_argument('--authors', action='store_true', help='Data from the original work is used, which has a weird shape.')
 
     opt = parser.parse_args()

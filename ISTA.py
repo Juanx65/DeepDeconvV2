@@ -8,6 +8,7 @@ from jax import lax
 
 from time import time
 from functools import partial
+from matplotlib import pyplot as plt
 
 class FISTA:
 
@@ -65,7 +66,7 @@ class FISTA:
 
 
     def solve(self, y, N):
-
+        
         key = jax.random.PRNGKey(int(time()))
         x = jax.random.normal(key, shape=(1, 1,) + y.shape) / y.shape[1]
         r = x.copy()
