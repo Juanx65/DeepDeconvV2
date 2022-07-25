@@ -72,4 +72,14 @@ DAS kernel no flip sin integrar
 python test.py --weights /weights/200-epoch-kernel-no-flip-sin-integrar/best.ckpt --authors --kernel kernels/kernel.npy -ncc -pcc --act_function relu
 ```
 
+Figura 4, diferencia entre flip y no flip sin integrart en data de los autores
 
+```
+python Figura_4.py -ncc --authors --act_function relu -pcc
+```
+
+Crear las figuras del entrenamiento a partir de los json
+
+```
+ python utils/ploting_training.py -if .\trainHistory\chirp-noflip.json -op C:\Users\Juan\Desktop\DeepDeconvV2\Figuras
+```
