@@ -83,3 +83,9 @@ Crear las figuras del entrenamiento a partir de los json
 ```
  python utils/ploting_training.py -if .\trainHistory\chirp-noflip.json -op C:\Users\Juan\Desktop\DeepDeconvV2\Figuras
 ```
+
+Comparison chirp 
+
+```
+python comparison_chirp.py --data data/CHIRP_DAS_NOFASE_data.h5 --weights /weights/200-epoch-chirp-single-channel/best.ckpt
+``` 

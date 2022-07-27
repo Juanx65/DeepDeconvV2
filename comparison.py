@@ -146,7 +146,7 @@ our_model.construct()
 our_model.compile()
 
 """ CARGAR PESOS AL MODELO """
-our_model.load_weights(str(str(Path(__file__).parent) + '/weights/1000-epoch-authors-integado/best.ckpt')).expect_partial()#'/checkpoints/cp-0100.ckpt'))
+our_model.load_weights(str(str(Path(__file__).parent) + '/weights/1000-epoch-authors-integrado/best.ckpt')).expect_partial()#'/checkpoints/cp-0100.ckpt'))
 
 """ Mould data into right shape for UNet """
 data_split = np.stack(np.split(data_int[:, :Nt_deep], Nwin, axis=-1), axis=0)
