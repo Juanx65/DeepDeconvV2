@@ -4,12 +4,12 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 import h5py
-from models import UNet
-from models import CallBacks
+from utils.models import UNet
+from utils.models import CallBacks
 from random import choice
 import tensorflow as tf
 import argparse
-from utils import *
+from utils.utils import *
 from ISTA import FISTA
 import time
 import json

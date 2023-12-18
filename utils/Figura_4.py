@@ -10,7 +10,13 @@ from models import CallBacks
 from random import choice
 import tensorflow as tf
 import argparse
-from utils import *
+try:
+    from utils import *
+except ImportError:
+    try:
+        from utils.utils import *
+    except ImportError:
+        print("No se pudo importar el módulo de procesamiento.")
 
 os.environ['XLA_PYTHON_CLIENT_MEM_FRACTION']='.10'
 
@@ -78,7 +84,7 @@ def test(opt):
     model_flip.compile()
 
     """ CARGAR PESOS AL MODELO """
-    model_flip.load_weights(str(str(Path(__file__).parent) + '/weights/200-epoch-kernel-flip-sin-integrar/best.ckpt')).expect_partial()
+    model_flip.load_weights(str(str(Path(__file__).parent.parent) + '/weights/200-epoch-kernel-flip-sin-integrar/best.ckpt')).expect_partial()
 
     """ Init Deep Learning model: Convolution """
     model_noflip = UNet(
@@ -89,7 +95,7 @@ def test(opt):
     model_noflip.compile()
 
     """ CARGAR PESOS AL MODELO """
-    model_noflip.load_weights(str(str(Path(__file__).parent) + '/weights/200-epoch-kernel-no-flip-sin-integrar/best.ckpt')).expect_partial()
+    model_noflip.load_weights(str(str(Path(__file__).parent.parent) + '/weights/200-epoch-kernel-no-flip-sin-integrar/best.ckpt')).expect_partial()
 
     Nwin = data.shape[1] // deep_win
     # Total number of time samples to be processed

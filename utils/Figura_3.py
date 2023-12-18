@@ -78,7 +78,7 @@ def test(opt):
     model_conv.compile()
 
     """ CARGAR PESOS AL MODELO """
-    model_conv.load_weights(str(str(Path(__file__).parent) + '/weights/200-epoch-chirp-multi-channel/best.ckpt')).expect_partial()
+    model_conv.load_weights(str(str(Path(__file__).parent.parent) + '/weights/200-epoch-chirp-multi-channel/best.ckpt')).expect_partial()
 
     Nwin = data.shape[1] // deep_win
     # Total number of time samples to be processed

@@ -5,12 +5,12 @@ import scipy.fft
 from scipy.signal import windows
 import matplotlib.pyplot as plt
 import h5py
-from models import UNet
-from models import CallBacks
+from utils.models import UNet
+from utils.models import CallBacks
 from random import choice
 import tensorflow as tf
 import argparse
-from models import DataGenerator
+from utils.models import DataGenerator
 from datetime import datetime
 import json
 os.environ['XLA_PYTHON_CLIENT_MEM_FRACTION']='.10'

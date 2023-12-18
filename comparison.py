@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import scipy.fft
 from scipy.signal import windows
-from models import UNet
+from utils.models import UNet
 import tensorflow as tf
 from time import time
 

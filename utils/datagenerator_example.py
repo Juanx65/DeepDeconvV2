@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import argparse
 import scipy.fft
 from scipy.signal import windows
-from models import DataGenerator
+from utils.models import DataGenerator
 
 # Load Data
 data_file = 'DAS_data.h5'
